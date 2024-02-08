@@ -35,16 +35,16 @@ impl<'a> Deserializer<StrRead<'a>> {
 }
 
 impl<'de, R: Read<'de>> Deserializer<R> {
-    fn next_char(&mut self) -> Result<Option<u8>> {
+    fn next_char(&mut self) -> Option<u8> {
         self.read.next()
     }
 
-    fn peek(&mut self) -> Result<Option<u8>> {
+    fn peek(&mut self) -> Option<u8> {
         self.read.peek()
     }
 
     fn end(&mut self) -> Result<()> {
-        match self.peek()? {
+        match self.peek() {
             Some(_) => Err(de::Error::custom("not over yet")),
             None => Ok(()),
         }
@@ -344,7 +344,7 @@ impl<'de, 'a, R: Read<'de> + 'a> de::MapAccess<'de> for MapAccess<'a, R> {
     {
         self.de.inner.clear();
         loop {
-            match self.de.next_char()? {
+            match self.de.next_char() {
                 None => {
                     return Ok(None);
                 }
@@ -363,7 +363,7 @@ impl<'de, 'a, R: Read<'de> + 'a> de::MapAccess<'de> for MapAccess<'a, R> {
     {
         self.de.inner.clear();
         loop {
-            match self.de.next_char()? {
+            match self.de.next_char() {
                 Some(b'\n') | Some(b'\t') | Some(b'\r') | None => {
                     return seed.deserialize(&mut *self.de);
                 }

@@ -1,10 +1,8 @@
 use core::str;
 
-use crate::error::Result;
-
 pub trait Read<'de> {
-    fn next(&mut self) -> Result<Option<u8>>;
-    fn peek(&mut self) -> Result<Option<u8>>;
+    fn next(&mut self) -> Option<u8>;
+    fn peek(&mut self) -> Option<u8>;
     fn discard(&mut self);
     fn byte_offset(&self) -> usize;
 }
@@ -26,23 +24,23 @@ impl<'a> SliceRead<'a> {
 
 impl<'a> Read<'a> for SliceRead<'a> {
     #[inline]
-    fn next(&mut self) -> Result<Option<u8>> {
-        Ok(if self.index < self.slice.len() {
+    fn next(&mut self) -> Option<u8> {
+        if self.index < self.slice.len() {
             let ch = self.slice[self.index];
             self.index += 1;
             Some(ch)
         } else {
             None
-        })
+        }
     }
 
     #[inline]
-    fn peek(&mut self) -> Result<Option<u8>> {
-        Ok(if self.index < self.slice.len() {
+    fn peek(&mut self) -> Option<u8> {
+        if self.index < self.slice.len() {
             Some(self.slice[self.index])
         } else {
             None
-        })
+        }
     }
 
     #[inline]
@@ -65,12 +63,12 @@ impl<'a> StrRead<'a> {
 
 impl<'a> Read<'a> for StrRead<'a> {
     #[inline]
-    fn next(&mut self) -> Result<Option<u8>> {
+    fn next(&mut self) -> Option<u8> {
         self.delegate.next()
     }
 
     #[inline]
-    fn peek(&mut self) -> Result<Option<u8>> {
+    fn peek(&mut self) -> Option<u8> {
         self.delegate.peek()
     }
 
