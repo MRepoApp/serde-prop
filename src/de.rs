@@ -57,23 +57,25 @@ impl<'de, R: Read<'de>> Deserializer<R> {
     fn parse_whitespace(&mut self) -> Option<u8> {
         loop {
             match self.next_char()? {
-                b' ' | b'\n' | b'\t' | b'\r' => {},
-                other => { return Some(other) }
+                b' ' | b'\n' | b'\t' | b'\r' => {}
+                other => return Some(other),
             }
         }
     }
 
     fn parse_value(&mut self) -> Vec<u8> {
         match self.peek() {
-            Some(b' ') => { self.eat_char() }
+            Some(b' ') => self.eat_char(),
             _ => {}
         };
 
         let mut slice = Vec::new();
         loop {
             match self.next_char() {
-                Some(b'\n' | b'\t' | b'\r') | None => { return slice; }
-                Some(b) => { slice.push(b) },
+                Some(b'\n' | b'\t' | b'\r') | None => {
+                    return slice;
+                }
+                Some(b) => slice.push(b),
             };
         }
     }
@@ -81,8 +83,10 @@ impl<'de, R: Read<'de>> Deserializer<R> {
     fn parse_comment(&mut self) -> Option<u8> {
         loop {
             match self.parse_whitespace()? {
-                b'#' | b'!' => { self.parse_value(); }
-                b => { return Some(b) }
+                b'#' | b'!' => {
+                    self.parse_value();
+                }
+                b => return Some(b),
             };
         }
     }
@@ -91,8 +95,10 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         let mut slice = Vec::new();
         loop {
             match self.parse_comment()? {
-                b'=' | b':' => { return Some(slice); }
-                b => { slice.push(b) },
+                b'=' | b':' => {
+                    return Some(slice);
+                }
+                b => slice.push(b),
             };
         }
     }
@@ -390,8 +396,8 @@ impl<'de, 'a, R: Read<'de> + 'a> de::MapAccess<'de> for MapAccess<'a, R> {
         K: DeserializeSeed<'de>,
     {
         let key = match self.de.parse_key() {
-            None => { return Ok(None) }
-            Some(b) => b
+            None => return Ok(None),
+            Some(b) => b,
         };
 
         self.de.inner.clear();
