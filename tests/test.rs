@@ -22,7 +22,12 @@ enum Enum {
 #[test]
 fn from_str() {
     let prop = r"
-    unused_0=unused 0
+    # test comment by '#'
+    ! test comment by '!'
+
+    # test colon
+    unused_0: unused 0
+
     unused1=
     unused2=2
     unused3=3

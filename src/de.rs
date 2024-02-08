@@ -39,6 +39,10 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         self.read.next()
     }
 
+    fn eat_char(&mut self) {
+        self.read.discard()
+    }
+
     fn peek(&mut self) -> Option<u8> {
         self.read.peek()
     }
@@ -47,6 +51,49 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         match self.peek() {
             Some(_) => Err(de::Error::custom("not over yet")),
             None => Ok(()),
+        }
+    }
+
+    fn parse_whitespace(&mut self) -> Option<u8> {
+        loop {
+            match self.next_char()? {
+                b' ' | b'\n' | b'\t' | b'\r' => {},
+                other => { return Some(other) }
+            }
+        }
+    }
+
+    fn parse_value(&mut self) -> Vec<u8> {
+        match self.peek() {
+            Some(b' ') => { self.eat_char() }
+            _ => {}
+        };
+
+        let mut slice = Vec::new();
+        loop {
+            match self.next_char() {
+                Some(b'\n' | b'\t' | b'\r') | None => { return slice; }
+                Some(b) => { slice.push(b) },
+            };
+        }
+    }
+
+    fn parse_comment(&mut self) -> Option<u8> {
+        loop {
+            match self.parse_whitespace()? {
+                b'#' | b'!' => { self.parse_value(); }
+                b => { return Some(b) }
+            };
+        }
+    }
+
+    fn parse_key(&mut self) -> Option<Vec<u8>> {
+        let mut slice = Vec::new();
+        loop {
+            match self.parse_comment()? {
+                b'=' | b':' => { return Some(slice); }
+                b => { slice.push(b) },
+            };
         }
     }
 
@@ -342,34 +389,25 @@ impl<'de, 'a, R: Read<'de> + 'a> de::MapAccess<'de> for MapAccess<'a, R> {
     where
         K: DeserializeSeed<'de>,
     {
+        let key = match self.de.parse_key() {
+            None => { return Ok(None) }
+            Some(b) => b
+        };
+
         self.de.inner.clear();
-        loop {
-            match self.de.next_char() {
-                None => {
-                    return Ok(None);
-                }
-                Some(b'=') => {
-                    return seed.deserialize(&mut *self.de).map(Some);
-                }
-                Some(b' ') | Some(b'\n') | Some(b'\t') | Some(b'\r') => {}
-                Some(b) => self.de.inner.push(b),
-            };
-        }
+        self.de.inner.extend(key);
+        seed.deserialize(&mut *self.de).map(Some)
     }
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value>
     where
         V: DeserializeSeed<'de>,
     {
+        let value = self.de.parse_value();
+
         self.de.inner.clear();
-        loop {
-            match self.de.next_char() {
-                Some(b'\n') | Some(b'\t') | Some(b'\r') | None => {
-                    return seed.deserialize(&mut *self.de);
-                }
-                Some(b) => self.de.inner.push(b),
-            };
-        }
+        self.de.inner.extend(value);
+        seed.deserialize(&mut *self.de)
     }
 }
 
