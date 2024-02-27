@@ -1,15 +1,18 @@
+use alloc::string::String;
+use alloc::vec::Vec;
+
+use serde::ser;
+
 use crate::error;
 use crate::error::Result;
-use serde::ser;
-use std::io;
-use std::io::Write;
+use crate::io;
 
 pub struct Serializer<W, F = CompactFormatter> {
     writer: W,
     formatter: F,
 }
 
-impl<W: Write, F: Formatter> Serializer<W, F> {
+impl<W: io::Write, F: Formatter> Serializer<W, F> {
     #[inline]
     pub fn with_formatter(writer: W, formatter: F) -> Self {
         Serializer { writer, formatter }
@@ -21,7 +24,7 @@ impl<W: Write, F: Formatter> Serializer<W, F> {
     }
 }
 
-impl<W: Write> Serializer<W> {
+impl<W: io::Write> Serializer<W> {
     #[inline]
     pub fn new(writer: W) -> Self {
         Serializer::with_formatter(writer, CompactFormatter)
@@ -32,7 +35,7 @@ pub trait Formatter {
     #[inline]
     fn write_null<W: ?Sized>(&mut self, writer: &mut W) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(b"")
     }
@@ -40,7 +43,7 @@ pub trait Formatter {
     #[inline]
     fn write_bool<W: ?Sized>(&mut self, writer: &mut W, value: bool) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let s = if value {
             b"true" as &[u8]
@@ -53,7 +56,7 @@ pub trait Formatter {
     #[inline]
     fn write_i8<W: ?Sized>(&mut self, writer: &mut W, value: i8) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -63,7 +66,7 @@ pub trait Formatter {
     #[inline]
     fn write_i16<W: ?Sized>(&mut self, writer: &mut W, value: i16) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -73,7 +76,7 @@ pub trait Formatter {
     #[inline]
     fn write_i32<W: ?Sized>(&mut self, writer: &mut W, value: i32) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -83,7 +86,7 @@ pub trait Formatter {
     #[inline]
     fn write_i64<W: ?Sized>(&mut self, writer: &mut W, value: i64) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -93,7 +96,7 @@ pub trait Formatter {
     #[inline]
     fn write_u8<W: ?Sized>(&mut self, writer: &mut W, value: u8) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -103,7 +106,7 @@ pub trait Formatter {
     #[inline]
     fn write_u16<W: ?Sized>(&mut self, writer: &mut W, value: u16) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -113,7 +116,7 @@ pub trait Formatter {
     #[inline]
     fn write_u32<W: ?Sized>(&mut self, writer: &mut W, value: u32) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -123,7 +126,7 @@ pub trait Formatter {
     #[inline]
     fn write_u64<W: ?Sized>(&mut self, writer: &mut W, value: u64) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(value);
@@ -133,7 +136,7 @@ pub trait Formatter {
     #[inline]
     fn write_f32<W: ?Sized>(&mut self, writer: &mut W, value: f32) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format_finite(value);
@@ -143,7 +146,7 @@ pub trait Formatter {
     #[inline]
     fn write_f64<W: ?Sized>(&mut self, writer: &mut W, value: f64) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format_finite(value);
@@ -153,7 +156,7 @@ pub trait Formatter {
     #[inline]
     fn write_str<W: ?Sized>(&mut self, writer: &mut W, value: &str) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(value.as_bytes())
     }
@@ -161,7 +164,7 @@ pub trait Formatter {
     #[inline]
     fn begin_key<W: ?Sized>(&mut self, writer: &mut W) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(b"\n")
     }
@@ -169,7 +172,7 @@ pub trait Formatter {
     #[inline]
     fn end_key<W: ?Sized>(&mut self, writer: &mut W) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(b"=")
     }
@@ -177,7 +180,7 @@ pub trait Formatter {
     #[inline]
     fn begin_value<W: ?Sized>(&mut self, writer: &mut W) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(b"")
     }
@@ -185,13 +188,13 @@ pub trait Formatter {
     #[inline]
     fn end_value<W: ?Sized>(&mut self, writer: &mut W) -> io::Result<()>
     where
-        W: Write,
+        W: io::Write,
     {
         writer.write_all(b"")
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::Serializer for &'a mut Serializer<W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::Serializer for &'a mut Serializer<W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -397,7 +400,7 @@ pub enum Compound<'a, W: 'a, F: 'a> {
     },
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeSeq for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeSeq for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -413,7 +416,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeSeq for Compound<'a, W, F> {
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeTuple for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeTuple for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -429,7 +432,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeTuple for Compound<'a, W, F> {
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeTupleStruct for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeTupleStruct for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -445,7 +448,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeTupleStruct for Compound<'a, W, F
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeTupleVariant for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeTupleVariant for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -461,7 +464,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeTupleVariant for Compound<'a, W, 
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeMap for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeMap for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -510,7 +513,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeMap for Compound<'a, W, F> {
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeStruct for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeStruct for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -528,7 +531,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeStruct for Compound<'a, W, F> {
     }
 }
 
-impl<'a, W: Write, F: Formatter> ser::SerializeStructVariant for Compound<'a, W, F> {
+impl<'a, W: io::Write, F: Formatter> ser::SerializeStructVariant for Compound<'a, W, F> {
     type Ok = ();
     type Error = error::Error;
 
@@ -547,7 +550,7 @@ impl<'a, W: Write, F: Formatter> ser::SerializeStructVariant for Compound<'a, W,
 #[inline]
 pub fn to_writer<W, T: ?Sized>(writer: W, value: &T) -> Result<()>
 where
-    W: Write,
+    W: io::Write,
     T: ser::Serialize,
 {
     let mut ser = Serializer::new(writer);

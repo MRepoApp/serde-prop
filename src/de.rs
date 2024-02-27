@@ -1,5 +1,6 @@
+use alloc::vec::Vec;
 use core::str;
-use std::str::FromStr;
+use core::str::FromStr;
 
 use serde::de;
 use serde::de::{DeserializeSeed, Unexpected, Visitor};
