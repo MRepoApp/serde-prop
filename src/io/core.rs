@@ -1,8 +1,3 @@
-//! Copy from [serde-rs/json](https://github.com/serde-rs/json/blob/207a57b68880769c81d525f9f5b38d3be1340806/src/io/core.rs)
-
-//! Reimplements core logic and types from `std::io` in an `alloc`-friendly
-//! fashion.
-
 use alloc::vec::Vec;
 use core::fmt::{self, Display};
 use core::result;
@@ -11,8 +6,6 @@ pub enum ErrorKind {
     Other,
 }
 
-// I/O errors can never occur in no-std mode. All our no-std I/O implementations
-// are infallible.
 pub struct Error;
 
 impl Display for Error {
@@ -33,8 +26,6 @@ pub trait Write {
     fn write(&mut self, buf: &[u8]) -> Result<usize>;
 
     fn write_all(&mut self, buf: &[u8]) -> Result<()> {
-        // All our Write impls in no_std mode always write the whole buffer in
-        // one call infallibly.
         let result = self.write(buf);
         debug_assert!(result.is_ok());
         debug_assert_eq!(result.unwrap_or(0), buf.len());
