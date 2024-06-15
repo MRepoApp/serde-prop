@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use alloc::string::ToString;
+use alloc::string::{String, ToString};
 use core::fmt;
 use core::result;
 
