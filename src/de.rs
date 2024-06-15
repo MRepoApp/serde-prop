@@ -65,10 +65,9 @@ impl<'de, R: Read<'de>> Deserializer<R> {
     }
 
     fn parse_value(&mut self) -> Vec<u8> {
-        match self.peek() {
-            Some(b' ') => self.eat_char(),
-            _ => {}
-        };
+        if let Some(b' ') = self.peek() {
+            self.eat_char()
+        }
 
         let mut slice = Vec::new();
         loop {

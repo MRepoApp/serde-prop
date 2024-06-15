@@ -1,4 +1,7 @@
-#![allow(unused)]
+#![allow( 
+    // Deserializer::from_str
+    clippy::should_implement_trait,
+)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate alloc;
