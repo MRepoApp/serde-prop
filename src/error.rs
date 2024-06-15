@@ -10,22 +10,22 @@ pub struct Error {
 }
 
 impl Error {
-    pub(crate) fn msg<T: fmt::Display>(msg: T) -> Self {
+    pub(crate) fn msg(msg: String) -> Self {
         Error {
             err: Box::new(ErrorImpl {
-                msg: Box::new(msg.to_string()),
+                msg: msg.into_boxed_str(),
             }),
         }
     }
 }
 
 struct ErrorImpl {
-    msg: Box<dyn fmt::Display>,
+    msg: Box<str>,
 }
 
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.err, f)
+        self.err.fmt(f)
     }
 }
 
@@ -37,7 +37,7 @@ impl fmt::Display for Error {
 
 impl fmt::Debug for ErrorImpl {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.msg.to_string())
+        self.msg.fmt(f)
     }
 }
 
@@ -51,12 +51,12 @@ impl serde::de::StdError for Error {}
 
 impl serde::de::Error for Error {
     fn custom<T: fmt::Display>(msg: T) -> Self {
-        Error::msg(msg)
+        Error::msg(msg.to_string())
     }
 }
 
 impl serde::ser::Error for Error {
     fn custom<T: fmt::Display>(msg: T) -> Self {
-        Error::msg(msg)
+        Error::msg(msg.to_string())
     }
 }
