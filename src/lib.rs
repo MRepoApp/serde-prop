@@ -1,4 +1,4 @@
-#![allow( 
+#![allow(
     // Deserializer::from_str
     clippy::should_implement_trait,
 )]
