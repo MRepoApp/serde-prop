@@ -2,21 +2,11 @@ use alloc::vec::Vec;
 use core::fmt::{self, Display};
 use core::result;
 
-pub enum ErrorKind {
-    Other,
-}
-
 pub struct Error;
 
 impl Display for Error {
     fn fmt(&self, _formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         unreachable!()
-    }
-}
-
-impl Error {
-    pub(crate) fn new(_kind: ErrorKind, _error: &'static str) -> Error {
-        Error
     }
 }
 
