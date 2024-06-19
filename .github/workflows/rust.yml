@@ -28,8 +28,11 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Run tests (std)
+      - name: Clippy
+        run: cargo clippy
+
+      - name: Tests (std)
         run: cargo test
 
-      - name: Run tests (no_std)
+      - name: Tests (no-std)
         run: cargo test --no-default-features --features alloc
