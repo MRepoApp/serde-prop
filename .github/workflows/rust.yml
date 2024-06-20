@@ -12,6 +12,7 @@ env:
 
 jobs:
   clippy:
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,12 +25,21 @@ jobs:
         run: cargo clippy
 
   test:
-    name: Test on ${{ matrix.os }}
+    name: Test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        build: [linux-x86_64, windows-x86_64, macos-x86_64, macos-aarch64]
+        include:
+          - build: linux-x86_64
+            os: ubuntu-latest
+          - build: windows-x86_64
+            os: windows-latest
+          - build: macos-x86_64
+            os: macos-13
+          - build: macos-aarch64
+            os: macos-latest
 
     steps:
       - name: Checkout
@@ -38,8 +48,8 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Tests (std)
+      - name: Test
         run: cargo test
 
-      - name: Tests (no-std)
+      - name: Test (no-std)
         run: cargo test --no-default-features --features alloc
